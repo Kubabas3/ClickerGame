@@ -8,6 +8,8 @@ import {
   StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const { width } = Dimensions.get('window');
 
@@ -15,7 +17,8 @@ export default function HomeScreen({ navigation }) {
   const [count, setCount] = useState(0);
   const [clickBonus, setClickBonus] = useState(1);
 
-  useEffect(() => {
+  useFocusEffect(
+  React.useCallback(() => {
     const loadData = async () => {
       const savedCount = await AsyncStorage.getItem('clickCount');
       const savedBonus = await AsyncStorage.getItem('clickBonus');
@@ -23,7 +26,9 @@ export default function HomeScreen({ navigation }) {
       if (savedBonus !== null) setClickBonus(parseInt(savedBonus));
     };
     loadData();
-  }, []);
+  }, [])
+);
+
 
   useEffect(() => {
     AsyncStorage.setItem('clickCount', count.toString());
@@ -34,7 +39,9 @@ export default function HomeScreen({ navigation }) {
     setCount(newCount);
   };
 
-  const buttonSize = width * 0.5;
+  const screenSize = Math.min(width, Dimensions.get('window').height);
+const buttonSize = screenSize * 0.4;
+
 
   return (
     <View style={styles.container}>
@@ -56,24 +63,23 @@ export default function HomeScreen({ navigation }) {
   </TouchableOpacity>
 </View>
 
-
       <View style={styles.center}>
-        <Text style={styles.counter}>Clicks: {count}</Text>
+  <Text style={styles.counter}>Energy: {count}</Text>
 
-        <TouchableOpacity
-          style={[
-            styles.circleButton,
-            {
-              width: buttonSize,
-              height: buttonSize,
-              borderRadius: buttonSize / 2,
-            },
-          ]}
-          onPress={handleClick}
-        >
-          <Text style={styles.buttonText}>CLICK!</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity
+    style={[
+      styles.circleButton,
+      {
+        width: buttonSize,
+        height: buttonSize,
+        borderRadius: buttonSize / 2,
+      },
+    ]}
+    onPress={handleClick}
+  >
+    {/* Кнопка теперь пустая */}
+  </TouchableOpacity>
+</View>
     </View>
   );
 }
@@ -116,9 +122,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  
 });

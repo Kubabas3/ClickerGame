@@ -23,9 +23,18 @@ export default function SettingsScreen({ navigation }) {
           text: 'Reset',
           style: 'destructive',
           onPress: async () => {
-            await AsyncStorage.removeItem('clickCount');
-            await AsyncStorage.removeItem('clickBonus');
-            Alert.alert('Progress reset.');
+            try {
+              await AsyncStorage.setItem('clickCount', '0');
+              await AsyncStorage.setItem('clickBonus', '1');
+
+              Alert.alert('Progress has been reset.');
+
+              // Навигация обратно на Home
+              navigation.navigate('Home');
+            } catch (e) {
+              console.log('Reset error:', e);
+              Alert.alert('Reset failed.');
+            }
           },
         },
       ]

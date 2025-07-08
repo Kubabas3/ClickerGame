@@ -10,41 +10,53 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function ShopScreen({ navigation }) {
   const [count, setCount] = useState(0);
   const [clickBonus, setClickBonus] = useState(1);
 
   const upgrades = [
-    { id: '1', name: 'Quark', cost: 10, bonus: 1 },
-    { id: '2', name: 'Proton', cost: 50, bonus: 2 },
-    { id: '3', name: 'Atom', cost: 200, bonus: 3 },
+    { id: '1', name: 'Energy Condenser', cost: 10, bonus: 1 },
+    { id: '2', name: 'Quantum Fluctuator', cost: 50, bonus: 2 },
+    { id: '3', name: 'Particle Accelerator', cost: 200, bonus: 4 },
+    { id: '4', name: 'Fusion Generator', cost: 1000, bonus: 10 },
+    { id: '5', name: 'Matter Synthesizer', cost: 5000, bonus: 25 },
+    { id: '6', name: 'Virus Breeder', cost: 15000, bonus: 40 },
+    { id: '7', name: 'DNA Compiler', cost: 50000, bonus: 60 },
+    { id: '8', name: 'Tissue Replicator', cost: 150000, bonus: 100 },
+    { id: '9', name: 'Orbital Satellite', cost: 500000, bonus: 200 },
+    { id: '10', name: 'Dyson Sphere', cost: 2000000, bonus: 500 },
   ];
 
   useEffect(() => {
     const loadData = async () => {
       const savedCount = await AsyncStorage.getItem('clickCount');
       const savedBonus = await AsyncStorage.getItem('clickBonus');
-      if (savedCount !== null) setCount(parseInt(savedCount));
-      if (savedBonus !== null) setClickBonus(parseInt(savedBonus));
+
+      setCount(savedCount ? parseInt(savedCount) : 0);
+      setClickBonus(savedBonus ? parseInt(savedBonus) : 1);
     };
     loadData();
   }, []);
 
-  useEffect(() => {
-    AsyncStorage.setItem('clickBonus', clickBonus.toString());
-  }, [clickBonus]);
+  const buyUpgrade = async (item) => {
+    // Перезагружаем последние данные
+    const savedCount = await AsyncStorage.getItem('clickCount');
+    const savedBonus = await AsyncStorage.getItem('clickBonus');
 
-  const buyUpgrade = (item) => {
-    if (count >= item.cost) {
-      const newCount = count - item.cost;
-      const newBonus = clickBonus + item.bonus;
+    let currentCount = savedCount ? parseInt(savedCount) : 0;
+    let currentBonus = savedBonus ? parseInt(savedBonus) : 1;
+
+    if (currentCount >= item.cost) {
+      const newCount = currentCount - item.cost;
+      const newBonus = currentBonus + item.bonus;
 
       setCount(newCount);
       setClickBonus(newBonus);
 
-      AsyncStorage.setItem('clickCount', newCount.toString());
+      await AsyncStorage.setItem('clickCount', newCount.toString());
+      await AsyncStorage.setItem('clickBonus', newBonus.toString());
     }
   };
 
@@ -67,26 +79,24 @@ export default function ShopScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
-  <TouchableOpacity
-    style={styles.tab}
-    onPress={() => navigation.navigate('Home')}
-  >
-    <Text style={styles.tabText}>Home</Text>
-  </TouchableOpacity>
-  <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-    <Text style={styles.tabText}>Shop</Text>
-  </TouchableOpacity>
-  <TouchableOpacity
-    style={styles.tab}
-    onPress={() => navigation.navigate('Settings')}
-  >
-    <Text style={styles.tabText}>Settings</Text>
-  </TouchableOpacity>
-</View>
-
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <Text style={styles.tabText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tab, styles.activeTab]}>
+          <Text style={styles.tabText}>Shop</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate('Settings')}
+        >
+          <Text style={styles.tabText}>Settings</Text>
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.counter}>Energy: {count}</Text>
-
       <FlatList
         data={upgrades}
         renderItem={renderItem}
@@ -130,7 +140,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   upgradeItem: {
-    backgroundColor: '#eee',
+    backgroundColor: '#eeeeee',
     borderRadius: 6,
     padding: 16,
     marginBottom: 12,
