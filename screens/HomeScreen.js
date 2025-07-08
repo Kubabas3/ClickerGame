@@ -39,16 +39,23 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
-        <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-          <Text style={styles.tabText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => navigation.navigate('Shop')}
-        >
-          <Text style={styles.tabText}>Shop</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity style={[styles.tab, styles.activeTab]}>
+    <Text style={styles.tabText}>Home</Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.tab}
+    onPress={() => navigation.navigate('Shop')}
+  >
+    <Text style={styles.tabText}>Shop</Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.tab}
+    onPress={() => navigation.navigate('Settings')}
+  >
+    <Text style={styles.tabText}>Settings</Text>
+  </TouchableOpacity>
+</View>
+
 
       <View style={styles.center}>
         <Text style={styles.counter}>Clicks: {count}</Text>
