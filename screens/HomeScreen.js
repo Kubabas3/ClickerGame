@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,79 +7,53 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-
+import { useGame } from '../context/GameContext';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
-  const [count, setCount] = useState(0);
-  const [clickBonus, setClickBonus] = useState(1);
-
-  useFocusEffect(
-  React.useCallback(() => {
-    const loadData = async () => {
-      const savedCount = await AsyncStorage.getItem('clickCount');
-      const savedBonus = await AsyncStorage.getItem('clickBonus');
-      if (savedCount !== null) setCount(parseInt(savedCount));
-      if (savedBonus !== null) setClickBonus(parseInt(savedBonus));
-    };
-    loadData();
-  }, [])
-);
-
-
-  useEffect(() => {
-    AsyncStorage.setItem('clickCount', count.toString());
-  }, [count]);
+  const {
+    count,
+    setCount,
+    clickBonus,
+    cpsBonus,
+  } = useGame();
 
   const handleClick = () => {
-    const newCount = count + clickBonus;
-    setCount(newCount);
+    setCount(prev => prev + clickBonus);
   };
 
-  const screenSize = Math.min(width, Dimensions.get('window').height);
-const buttonSize = screenSize * 0.4;
-
+  
 
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
-  <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-    <Text style={styles.tabText}>Home</Text>
-  </TouchableOpacity>
-  <TouchableOpacity
-    style={styles.tab}
-    onPress={() => navigation.navigate('Shop')}
-  >
-    <Text style={styles.tabText}>Shop</Text>
-  </TouchableOpacity>
-  <TouchableOpacity
-    style={styles.tab}
-    onPress={() => navigation.navigate('Settings')}
-  >
-    <Text style={styles.tabText}>Settings</Text>
-  </TouchableOpacity>
-</View>
+        <TouchableOpacity style={styles.tabActive}>
+          <Text style={styles.tabText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate('Shop')}
+        >
+          <Text style={styles.tabText}>Shop</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => navigation.navigate('Settings')}
+        >
+          <Text style={styles.tabText}>Settings</Text>
+        </TouchableOpacity>
+      </View>
 
-      <View style={styles.center}>
-  <Text style={styles.counter}>Energy: {count}</Text>
+      <View style={styles.centerContainer}>
+        <Text style={styles.energyLabel}>Energy</Text>
+        <Text style={styles.energyValue}>{count}</Text>
+        <Text style={styles.cpsText}>CPS: {cpsBonus}</Text>
 
-  <TouchableOpacity
-    style={[
-      styles.circleButton,
-      {
-        width: buttonSize,
-        height: buttonSize,
-        borderRadius: buttonSize / 2,
-      },
-    ]}
-    onPress={handleClick}
-  >
-    {/* Кнопка теперь пустая */}
-  </TouchableOpacity>
-</View>
+        <TouchableOpacity style={styles.circleButton} onPress={handleClick}>
+          {/* Empty circle */}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -100,27 +74,41 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  activeTab: {
+  tabActive: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
     backgroundColor: '#aaaaaa',
   },
   tabText: {
     fontSize: 16,
     color: '#000000',
   },
-  center: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  counter: {
-    fontSize: 22,
-    marginBottom: 24,
-    color: '#000000',
+  energyLabel: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+  energyValue: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  cpsText: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 32,
   },
   circleButton: {
-    backgroundColor: '#888888',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: width * 0.5,
+    height: width * 0.5,
+    borderRadius: (width * 0.5) / 2,
+    backgroundColor: '#999999',
   },
-  
 });

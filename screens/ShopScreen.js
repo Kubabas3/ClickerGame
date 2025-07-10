@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,23 @@ import {
   StatusBar,
   FlatList,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGame } from '../context/GameContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function ShopScreen({ navigation }) {
-  const [count, setCount] = useState(0);
-  const [clickBonus, setClickBonus] = useState(1);
+  const {
+    count,
+    setCount,
+    upgradeCounts,
+    setClickBonus,
+    setCpsBonus,
+    setUpgradeCounts,
+  } = useGame();
 
-  const upgrades = [
+  const [activeTab, setActiveTab] = useState('click');
+
+  const clickUpgrades = [
     { id: '1', name: 'Energy Condenser', cost: 10, bonus: 1 },
     { id: '2', name: 'Quantum Fluctuator', cost: 50, bonus: 2 },
     { id: '3', name: 'Particle Accelerator', cost: 200, bonus: 4 },
@@ -29,76 +37,91 @@ export default function ShopScreen({ navigation }) {
     { id: '10', name: 'Dyson Sphere', cost: 2000000, bonus: 500 },
   ];
 
-  useEffect(() => {
-    const loadData = async () => {
-      const savedCount = await AsyncStorage.getItem('clickCount');
-      const savedBonus = await AsyncStorage.getItem('clickBonus');
+  const autoUpgrades = [
+    { id: 'a1', name: 'Passive Emitter', cost: 100, cps: 1 },
+    { id: 'a2', name: 'Nanobot Swarm', cost: 500, cps: 5 },
+    { id: 'a3', name: 'AI Factory', cost: 2000, cps: 10 },
+    { id: 'a4', name: 'Quantum Reactor', cost: 10000, cps: 25 },
+  ];
 
-      setCount(savedCount ? parseInt(savedCount) : 0);
-      setClickBonus(savedBonus ? parseInt(savedBonus) : 1);
-    };
-    loadData();
-  }, []);
+  const buyUpgrade = (item) => {
+  if (count >= item.cost) {
+    setCount(count - item.cost);
 
-  const buyUpgrade = async (item) => {
-    // Перезагружаем последние данные
-    const savedCount = await AsyncStorage.getItem('clickCount');
-    const savedBonus = await AsyncStorage.getItem('clickBonus');
-
-    let currentCount = savedCount ? parseInt(savedCount) : 0;
-    let currentBonus = savedBonus ? parseInt(savedBonus) : 1;
-
-    if (currentCount >= item.cost) {
-      const newCount = currentCount - item.cost;
-      const newBonus = currentBonus + item.bonus;
-
-      setCount(newCount);
-      setClickBonus(newBonus);
-
-      await AsyncStorage.setItem('clickCount', newCount.toString());
-      await AsyncStorage.setItem('clickBonus', newBonus.toString());
+    // применяем бонус
+    if (item.bonus) {
+      setClickBonus(prev => prev + item.bonus);
+    } else if (item.cps) {
+      setCpsBonus(prev => prev + item.cps);
     }
+
+    // увеличиваем количество покупок
+    setUpgradeCounts(prev => ({
+      ...prev,
+      [item.id]: (prev[item.id] || 0) + 1,
+    }));
+  }
+};
+
+
+  const renderItem = ({ item }) => {
+    const purchased = upgradeCounts[item.id] || 0;
+    const isClick = activeTab === 'click';
+    return (
+      <View style={styles.upgradeItem}>
+        <View>
+          <Text style={styles.upgradeTitle}>
+            {item.name} {purchased > 0 ? `(x${purchased})` : ''}
+          </Text>
+          <Text style={styles.upgradeDesc}>
+            +{isClick ? item.bonus : item.cps} {isClick ? 'per click' : 'per second'}
+          </Text>
+          <Text style={styles.upgradeCost}>Cost: {item.cost}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => buyUpgrade(item)}
+          style={styles.buyButton}
+        >
+          <Text style={styles.buyText}>Buy</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.upgradeItem}>
-      <View>
-        <Text style={styles.upgradeTitle}>{item.name}</Text>
-        <Text style={styles.upgradeDesc}>+{item.bonus} per click</Text>
-        <Text style={styles.upgradeCost}>Cost: {item.cost}</Text>
-      </View>
-      <TouchableOpacity
-        onPress={() => buyUpgrade(item)}
-        style={styles.buyButton}
-      >
-        <Text style={styles.buyText}>Buy</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const currentUpgrades = activeTab === 'click' ? clickUpgrades : autoUpgrades;
 
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => navigation.navigate('Home')}
-        >
+        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Home')}>
           <Text style={styles.tabText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tab, styles.activeTab]}>
           <Text style={styles.tabText}>Shop</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => navigation.navigate('Settings')}
-        >
+        <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Settings')}>
           <Text style={styles.tabText}>Settings</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.subTabs}>
+        <TouchableOpacity
+          style={[styles.subTab, activeTab === 'click' && styles.activeSubTab]}
+          onPress={() => setActiveTab('click')}
+        >
+          <Text style={styles.tabText}>Click Upgrades</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.subTab, activeTab === 'cps' && styles.activeSubTab]}
+          onPress={() => setActiveTab('cps')}
+        >
+          <Text style={styles.tabText}>Auto Upgrades</Text>
         </TouchableOpacity>
       </View>
 
       <Text style={styles.counter}>Energy: {count}</Text>
       <FlatList
-        data={upgrades}
+        data={currentUpgrades}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.upgradeList}
@@ -125,6 +148,19 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     backgroundColor: '#aaaaaa',
+  },
+  subTabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#dddddd',
+  },
+  subTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  activeSubTab: {
+    backgroundColor: '#bbbbbb',
   },
   tabText: {
     fontSize: 16,

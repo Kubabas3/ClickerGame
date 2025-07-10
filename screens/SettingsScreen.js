@@ -4,41 +4,39 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
   StatusBar,
   Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGame } from '../context/GameContext';
+
+const { width } = Dimensions.get('window');
 
 export default function SettingsScreen({ navigation }) {
-  const handleReset = async () => {
-    Alert.alert(
-      'Reset Progress',
-      'Are you sure you want to reset everything?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Reset',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await AsyncStorage.setItem('clickCount', '0');
-              await AsyncStorage.setItem('clickBonus', '1');
+  const {
+    setCount,
+    setClickBonus,
+    setCpsBonus,
+    setUpgradeCounts,
+  } = useGame();
 
-              Alert.alert('Progress has been reset.');
-
-              // Навигация обратно на Home
-              navigation.navigate('Home');
-            } catch (e) {
-              console.log('Reset error:', e);
-              Alert.alert('Reset failed.');
-            }
-          },
+  const resetGame = () => {
+    Alert.alert('Reset Game', 'Are you sure you want to reset everything?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => {
+          setCount(0);
+          setClickBonus(1);
+          setCpsBonus(0);
+          setUpgradeCounts({});
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
@@ -61,9 +59,9 @@ export default function SettingsScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.center}>
-        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-          <Text style={styles.resetText}>Reset Progress</Text>
+      <View style={styles.centerContainer}>
+        <TouchableOpacity style={styles.resetButton} onPress={resetGame}>
+          <Text style={styles.resetText}>RESET ALL</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -93,15 +91,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000000',
   },
-  center: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   resetButton: {
-    backgroundColor: '#cc0000',
+    backgroundColor: '#ff4444',
     paddingVertical: 16,
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
     borderRadius: 8,
   },
   resetText: {
