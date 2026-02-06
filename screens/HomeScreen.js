@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,14 +19,19 @@ export default function HomeScreen({ navigation }) {
     cpsBonus,
   } = useGame();
 
-  const handleClick = () => {
+  // Логика клика
+  const handleClick = useCallback(() => {
     setCount(prev => prev + clickBonus);
-  };
+  }, [clickBonus, setCount]);
 
-  
+  // Форматирование текста для оптимизации рендеров
+  const energyText = useMemo(() => count.toLocaleString(), [count]);
+  const cpsText = useMemo(() => `CPS: ${cpsBonus}`, [cpsBonus]);
+  const clickPowerText = useMemo(() => `Click Power: ${clickBonus}`, [clickBonus]);
 
   return (
     <View style={styles.container}>
+      {/* Навигация */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabActive}>
           <Text style={styles.tabText}>Home</Text>
@@ -45,13 +50,24 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Основной контент */}
       <View style={styles.centerContainer}>
         <Text style={styles.energyLabel}>Energy</Text>
-        <Text style={styles.energyValue}>{count}</Text>
-        <Text style={styles.cpsText}>CPS: {cpsBonus}</Text>
+        <Text style={styles.energyValue}>{energyText}</Text>
+        
+        {/* Информационная панель (CPS и Сила клика) */}
+        <View style={styles.statsRow}>
+          <Text style={styles.statsText}>{cpsText}</Text>
+          <Text style={styles.statsSeparator}>|</Text>
+          <Text style={styles.statsText}>{clickPowerText}</Text>
+        </View>
 
-        <TouchableOpacity style={styles.circleButton} onPress={handleClick}>
-          {/* Empty circle */}
+        <TouchableOpacity 
+          style={styles.circleButton} 
+          onPress={handleClick}
+          activeOpacity={0.7}
+        >
+          {/* Пустой круг */}
         </TouchableOpacity>
       </View>
     </View>
@@ -96,19 +112,35 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   energyValue: {
-    fontSize: 40,
+    fontSize: 44,
     fontWeight: 'bold',
     color: '#000',
+    marginBottom: 10,
   },
-  cpsText: {
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  statsText: {
     fontSize: 16,
-    color: '#333',
-    marginBottom: 32,
+    color: '#444',
+    fontWeight: '500',
+  },
+  statsSeparator: {
+    marginHorizontal: 15,
+    fontSize: 16,
+    color: '#ccc',
   },
   circleButton: {
-    width: width * 0.5,
-    height: width * 0.5,
-    borderRadius: (width * 0.5) / 2,
+    width: width * 0.55,
+    height: width * 0.55,
+    borderRadius: (width * 0.55) / 2,
     backgroundColor: '#999999',
+    elevation: 5, // тень для Android
+    shadowColor: '#000', // тень для iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
 });
