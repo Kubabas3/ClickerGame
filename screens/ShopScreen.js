@@ -48,14 +48,14 @@ export default function ShopScreen({ navigation }) {
   if (count >= item.cost) {
     setCount(count - item.cost);
 
-    // применяем бонус
+    
     if (item.bonus) {
       setClickBonus(prev => prev + item.bonus);
     } else if (item.cps) {
       setCpsBonus(prev => prev + item.cps);
     }
 
-    // увеличиваем количество покупок
+    
     setUpgradeCounts(prev => ({
       ...prev,
       [item.id]: (prev[item.id] || 0) + 1,

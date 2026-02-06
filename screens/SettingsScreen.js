@@ -6,7 +6,7 @@ import {
   StyleSheet, 
   StatusBar, 
   Alert, 
-  Platform // Добавили Platform для проверки устройства
+  Platform 
 } from 'react-native';
 import { useGame } from '../context/GameContext';
 
@@ -17,14 +17,14 @@ export default function SettingsScreen({ navigation }) {
     const title = 'Сброс игры';
     const message = 'Вы уверены, что хотите удалить весь прогресс?';
 
-    // ПРОВЕРКА: Если мы в браузере (Web)
+    
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(`${title}\n\n${message}`);
       if (confirmed) {
         runReset();
       }
     } else {
-      // Если мы на телефоне (iOS/Android)
+      
       Alert.alert(title, message, [
         { text: 'Отмена', style: 'cancel' },
         { text: 'Удалить', style: 'destructive', onPress: runReset },
@@ -32,7 +32,7 @@ export default function SettingsScreen({ navigation }) {
     }
   };
 
-  // Вынес логику сброса в отдельную функцию, чтобы не дублировать
+  
   const runReset = async () => {
     const success = await resetAllData();
     if (success) {
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
     width: '100%',
-    maxWidth: 400, // Чтобы на компе кнопка не была слишком гигантской
+    maxWidth: 400, 
     alignItems: 'center'
   },
   resetText: { color: '#fff', fontWeight: 'bold' }
